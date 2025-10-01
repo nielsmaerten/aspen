@@ -50,7 +50,15 @@ export class DateStrategy implements MetadataStrategy<'date', string, MetadataEx
       return {
         field: this.field,
         type: 'unknown' as const,
-        message: response.data.reason,
+        message: response.data.reason ?? undefined,
+      };
+    }
+
+    if (response.data.value === null) {
+      return {
+        field: this.field,
+        type: 'invalid' as const,
+        message: 'Model returned null date for ok status',
       };
     }
 
@@ -58,7 +66,7 @@ export class DateStrategy implements MetadataStrategy<'date', string, MetadataEx
       field: this.field,
       type: 'ok' as const,
       value: response.data.value,
-      message: response.data.reason,
+      message: response.data.reason ?? undefined,
     };
   }
 }

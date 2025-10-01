@@ -46,19 +46,30 @@ export class TitleStrategy implements MetadataStrategy<'title', string, Metadata
       };
     }
 
+    const message = response.data.reason ?? undefined;
+
     if (response.data.status === 'unknown') {
       return {
         field: this.field,
         type: 'unknown' as const,
-        message: response.data.reason,
+        message,
+      };
+    }
+
+    const value = response.data.value;
+    if (value === null) {
+      return {
+        field: this.field,
+        type: 'invalid' as const,
+        message: 'Model returned null title for ok status',
       };
     }
 
     return {
       field: this.field,
       type: 'ok' as const,
-      value: response.data.value.trim(),
-      message: response.data.reason,
+      value: value.trim(),
+      message,
     };
   }
 }
