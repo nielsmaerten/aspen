@@ -1,3 +1,4 @@
+#!/usr/bin/env node
 import { loadEnvironment } from './bootstrap/env.js';
 import { run } from './app.js';
 

@@ -10,7 +10,11 @@ export const TitleResponseSchema = z
   .superRefine((obj, ctx) => {
     if (obj.status === 'ok') {
       if (obj.value === null) {
-        ctx.addIssue({ code: 'custom', message: 'value is required when status is ok', path: ['value'] });
+        ctx.addIssue({
+          code: 'custom',
+          message: 'value is required when status is ok',
+          path: ['value'],
+        });
       }
     }
   });
@@ -32,7 +36,11 @@ export const DateResponseSchema = z
   .superRefine((obj, ctx) => {
     if (obj.status === 'ok') {
       if (obj.value === null) {
-        ctx.addIssue({ code: 'custom', message: 'value is required when status is ok', path: ['value'] });
+        ctx.addIssue({
+          code: 'custom',
+          message: 'value is required when status is ok',
+          path: ['value'],
+        });
       }
     }
   });
@@ -52,7 +60,11 @@ export const CorrespondentResponseSchema = z
   .superRefine((obj, ctx) => {
     if (obj.status === 'ok') {
       if (obj.value === null) {
-        ctx.addIssue({ code: 'custom', message: 'value is required when status is ok', path: ['value'] });
+        ctx.addIssue({
+          code: 'custom',
+          message: 'value is required when status is ok',
+          path: ['value'],
+        });
       }
     }
   });
@@ -66,7 +78,11 @@ export const DoctypeResponseSchema = z
   .superRefine((obj, ctx) => {
     if (obj.status === 'ok') {
       if (obj.value === null) {
-        ctx.addIssue({ code: 'custom', message: 'value is required when status is ok', path: ['value'] });
+        ctx.addIssue({
+          code: 'custom',
+          message: 'value is required when status is ok',
+          path: ['value'],
+        });
       }
     }
   });

@@ -1,0 +1,73 @@
+name: Detect version bump
+
+on:
+  push:
+    branches:
+      - main
+
+permissions:
+  contents: write
+
+jobs:
+  prepare-draft-release:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Detect version change
+        id: version
+        shell: bash
+        run: |
+          set -eo pipefail
+
+          CURRENT_VERSION=$(jq -r '.version' package.json)
+          echo "current=$CURRENT_VERSION" >> "$GITHUB_OUTPUT"
+
+          if git rev-parse HEAD^ >/dev/null 2>&1 && git show HEAD^:package.json > /tmp/previous-package.json 2>/dev/null; then
+            PREVIOUS_VERSION=$(jq -r '.version // empty' /tmp/previous-package.json)
+          else
+            PREVIOUS_VERSION=""
+          fi
+
+          echo "previous=$PREVIOUS_VERSION" >> "$GITHUB_OUTPUT"
+
+          if [ -z "$PREVIOUS_VERSION" ] || [ "$PREVIOUS_VERSION" != "$CURRENT_VERSION" ]; then
+            echo "Version change detected: ${PREVIOUS_VERSION:-none} -> $CURRENT_VERSION"
+            echo "changed=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "No version change detected ($CURRENT_VERSION)."
+            echo "changed=false" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Check existing release
+        if: steps.version.outputs.changed == 'true'
+        id: release_check
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          TAG="v${{ steps.version.outputs.current }}"
+
+          if gh release view "$TAG" >/dev/null 2>&1; then
+            echo "Release already exists for $TAG; skipping creation."
+            echo "create=false" >> "$GITHUB_OUTPUT"
+          else
+            echo "No existing release for $TAG."
+            echo "create=true" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Create draft release
+        if: steps.release_check.outputs.create == 'true'
+        uses: softprops/action-gh-release@v2
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tag_name: v${{ steps.version.outputs.current }}
+          name: v${{ steps.version.outputs.current }}
+          draft: true
+          generate_release_notes: true
