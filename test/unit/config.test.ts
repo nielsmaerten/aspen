@@ -48,7 +48,7 @@ describe('loadConfig', () => {
   });
 
   it('throws when tag names collide', () => {
-    resetEnv({ ASPEN_PROCESSED_TAG: '$ai-queue' });
+    resetEnv({ ASPEN_TAG_PROCESSED: '$ai-queue' });
 
     expect(() => loadConfig()).toThrowError(/must be unique/i);
   });

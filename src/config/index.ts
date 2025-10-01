@@ -8,9 +8,9 @@ import type { AiProvider, AspenConfig } from './types.js';
 type EnvShape = {
   PAPERLESS_BASE_URL?: string;
   PAPERLESS_API_TOKEN?: string;
-  ASPEN_QUEUE_TAG?: string;
-  ASPEN_PROCESSED_TAG?: string;
-  ASPEN_REVIEW_TAG?: string;
+  ASPEN_TAG_QUEUE?: string;
+  ASPEN_TAG_PROCESSED?: string;
+  ASPEN_TAG_REVIEW?: string;
   ASPEN_SET_TITLE?: string;
   ASPEN_SET_CORRESPONDENT?: string;
   ASPEN_SET_DATE?: string;
@@ -60,9 +60,9 @@ const providerNames = Object.keys(models) as string[];
 const envSchema = z.object({
   PAPERLESS_BASE_URL: z.string().trim().url('PAPERLESS_BASE_URL must be a valid URL'),
   PAPERLESS_API_TOKEN: z.string().trim().min(1, 'PAPERLESS_API_TOKEN must be set'),
-  ASPEN_QUEUE_TAG: tagSchema.optional().default('$ai-queue'),
-  ASPEN_PROCESSED_TAG: tagSchema.optional().default('$ai-processed'),
-  ASPEN_REVIEW_TAG: tagSchema.optional().default('$ai-review'),
+  ASPEN_TAG_QUEUE: tagSchema.optional().default('$ai-queue'),
+  ASPEN_TAG_PROCESSED: tagSchema.optional().default('$ai-processed'),
+  ASPEN_TAG_REVIEW: tagSchema.optional().default('$ai-review'),
   ASPEN_SET_TITLE: booleanFromEnv(true),
   ASPEN_SET_CORRESPONDENT: booleanFromEnv(true),
   ASPEN_SET_DATE: booleanFromEnv(true),
@@ -133,9 +133,9 @@ export function loadConfig(): AspenConfig {
 
   const parsed = envSchema.parse(buildEnvSource());
 
-  const tagValues = [parsed.ASPEN_QUEUE_TAG, parsed.ASPEN_PROCESSED_TAG, parsed.ASPEN_REVIEW_TAG];
+  const tagValues = [parsed.ASPEN_TAG_QUEUE, parsed.ASPEN_TAG_PROCESSED, parsed.ASPEN_TAG_REVIEW];
   if (new Set(tagValues).size !== tagValues.length) {
-    throw new Error('ASPEN_QUEUE_TAG, ASPEN_PROCESSED_TAG, and ASPEN_REVIEW_TAG must be unique');
+    throw new Error('ASPEN_TAG_QUEUE, ASPEN_TAG_PROCESSED, and ASPEN_TAG_REVIEW must be unique');
   }
 
   const metadataTargets: Record<MetadataField, boolean> = {
@@ -165,9 +165,9 @@ export function loadConfig(): AspenConfig {
       baseUrl: parsed.PAPERLESS_BASE_URL,
       token: parsed.PAPERLESS_API_TOKEN,
       tags: {
-        queue: parsed.ASPEN_QUEUE_TAG,
-        processed: parsed.ASPEN_PROCESSED_TAG,
-        review: parsed.ASPEN_REVIEW_TAG,
+        queue: parsed.ASPEN_TAG_QUEUE,
+        processed: parsed.ASPEN_TAG_PROCESSED,
+        review: parsed.ASPEN_TAG_REVIEW,
       },
     },
     metadata: {
