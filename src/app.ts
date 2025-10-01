@@ -16,9 +16,7 @@ import type { EntitySelection } from './domain/metadata.js';
 import { normalizeName } from './utils/text.js';
 import type { AspenConfig } from './config/types.js';
 
-const POLL_INTERVAL_MS = 5_000;
-
-export async function run(): Promise<void> {
+export async function run(runOnce = false): Promise<void> {
   const config = loadConfig();
   const { logger, logFilePath } = await createLogger();
 
@@ -51,10 +49,7 @@ export async function run(): Promise<void> {
         logger,
         tagSet,
       });
-
-      if (!processed) {
-        await delay(POLL_INTERVAL_MS);
-      }
+      if (!processed || runOnce) break;
     } catch (error) {
       logger.error({ err: error }, 'Fatal error while processing document');
       throw error;
