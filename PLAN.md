@@ -1,11 +1,32 @@
 # Aspen
 ## Implementation plan
-- #TODO: Generate a full plan to implement Aspen
+- Establish the base project structure: confirm TypeScript/ESM config, wire up Prettier, and ensure `dotenv` loads before any modules that need configuration.
+- Implement a configuration module that reads env vars via `zod`, validates tag names/feature toggles, and exposes typed settings for AI provider selection.
+- Create thin clients for dependencies: wrap `paperless-node` for document search/download/update/tag mutations; wrap `token.js` with a simple adapter that maps provider options and propagates any failure so the main loop halts for inspection.
+- Model lightweight domain entities (`DocumentJob`, `MetadataResult`) and define interfaces for metadata strategies to keep orchestration logic decoupled and testable.
+- Build the prompting layer: load prompt templates from `./prompts/*.txt`, inject document context, handle the optional full-PDF upload toggle, and prepare JSON schemas via `zod` v4 `toJsonSchema` (now stable and approved for use) for providers that support structured responses.
+- Implement metadata extractors for each field that call the AI client, validate responses with `zod`, enforce allowlists for correspondents/doctypes (respecting `Unknown` and creation flags), and determine whether a document should be marked for review when the AI responds with `Unknown` or an invalid value.
+- Develop the orchestration loop: poll Paperless for one queued document, fetch the current allowlisted correspondents and doctypes before each iteration, fetch text or upload the original based on configuration, run metadata extractors (one by one), aggregate results, and decide between processed or review tags.
+- Integrate tagging workflow: add `$ai-processed` or `$ai-review`, update metadata fields with straightforward error handling to ensure partial failures stop the loop, and remove `$ai-queue` only after another tag is applied successfully.
+- Add logging with `pino`: open a timestamped logfile per run, stream pretty-printed logs to the console via `pino-pretty`, and capture key events (start, provider calls, tagging outcomes).
+- Write automated tests with `vitest`: unit tests for config and AI parsing using mocked clients, plus an integration test that invokes the real Paperless instance when `ASPEN_DEV_RUN_INTEGRATION=true`.
 
+## Implementation guidelines
+- Keep functions small and focused; aim for single responsibility.
+- Don't repeat yourself; abstract repeated logic into reusable functions or classes.
+- Don't reinvent the wheel; leverage existing npm packages where appropriate.
+- Use `async/await` for all asynchronous operations; avoid raw Promises.
+- Handle errors gracefully; log meaningful messages and fail fast when necessary.
+- Write clear, concise comments to explain non-obvious logic or decisions.
+- Follow consistent naming conventions and code style; use Prettier to format code automatically.
+- Don't over-engineer; start simple and iterate based on real needs and feedback.
+ 
 ## Short description
-- Aspen is an orgestrator between two libraries: 
-  - paperless-node 
-  - token.js
+- Aspen's goal is to automatically extract metadata from documents in Paperless-ngx using AI, 
+  and apply that metadata to the documents in Paperless-ngx.
+- Aspen is an orchestrator between two libraries:
+  - paperless-node: to interact with Paperless-ngx
+  - token.js: to interact with various AI providers
 - When started, Aspen reads env vars using dotenv, so it knows:
   - which AI provider to use (OpenAI, Ollama, Gemini, ...)
   - which Paperless-ngx instance to apply metadata to
@@ -14,11 +35,12 @@
 - Aspen then runs in a loop:
   - Get 1 document from paperless-ngx (using paperless-node) that has the tag `$ai-queue`
   - Download the document & extract text (using paperless-node)
+  - Retrieve the current correspondents and doctypes from paperless-ngx so allowlists stay fresh
   - Send the text to the AI provider (see next section)
   - Process the response from the AI provider
   - Apply the metadata to the document in paperless-ngx (using paperless-node)
-  - Remove the `$ai-queue` tag
-  - Add the `$ai-processed` or `$ai-review` tag, depending AI confidence
+  - Add the `$ai-processed` tag for valid responses or `$ai-review` when the AI returned `Unknown` or an invalid value (including disallowed new entries)
+  - Remove the `$ai-queue` tag only after another tag has been added successfully
   - Repeat
 
 ### Calling the AI provider
@@ -64,7 +86,11 @@ ASPEN_SET_DATE="true"
 ASPEN_SET_DOCTYPE="true"
 ASPEN_ALLOW_NEW_DOCTYPES="false"
 ASPEN_ALLOW_NEW_CORRESPONDENTS="false"
+ASPEN_UPLOAD_ORIGINAL="false"
+ASPEN_DEV_RUN_INTEGRATION="false"
 ```
 
 ## Notes
 - Tags `$ai-queue`, `$ai-processed`, and `$ai-review` are default, but can be overridden using env vars
+- ASPEN_UPLOAD_ORIGINAL controls whether the original PDF is uploaded to the AI provider (if supported) instead of just the extracted text. This can improve accuracy for providers that support it.
+- ASPEN_DEV_RUN_INTEGRATION controls whether the integration test that calls a real Paperless instance is run. This should only be true in CI or when you specifically want to test against a real instance.
