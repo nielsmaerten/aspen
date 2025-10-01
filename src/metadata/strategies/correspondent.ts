@@ -61,11 +61,21 @@ export class CorrespondentStrategy
       };
     }
 
+    const message = response.data.reason ?? undefined;
+
     if (response.data.status === 'unknown') {
       return {
         field: this.field,
         type: 'unknown' as const,
-        message: response.data.reason,
+        message,
+      };
+    }
+
+    if (!response.data.value) {
+      return {
+        field: this.field,
+        type: 'invalid' as const,
+        message: 'Model returned null correspondent for ok status',
       };
     }
 
@@ -81,7 +91,7 @@ export class CorrespondentStrategy
           id: existing.id,
           name: existing.name,
         } as EntitySelection,
-        message: candidate.reason,
+        message: candidate.reason ?? undefined,
       };
     }
 
@@ -93,7 +103,7 @@ export class CorrespondentStrategy
           type: 'new',
           name: candidate.name,
         } as EntitySelection,
-        message: candidate.reason,
+        message: candidate.reason ?? undefined,
       };
     }
 
