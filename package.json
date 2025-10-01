@@ -1,10 +1,19 @@
 {
   "name": "aspen",
   "version": "0.0.1",
-  "description": "Organize Paperless-ngx using with AI",
-  "main": "index.js",
+  "description": "Automate Paperless-ngx metadata enrichment with AI",
+  "type": "module",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "build": "tsc --project tsconfig.build.json",
+    "clean": "rm -rf dist",
+    "dev": "tsx watch src/index.ts",
+    "format": "prettier --write \"{src,test,prompts}/**/*.{ts,js,json,md}\"",
+    "lint": "prettier --check \"{src,test,prompts}/**/*.{ts,js,json,md}\"",
+    "start": "node dist/index.js",
+    "test": "vitest run",
+    "test:watch": "vitest"
   },
   "repository": {
     "type": "git",
@@ -22,9 +31,18 @@
   "packageManager": "pnpm@10.17.1+sha512.17c560fca4867ae9473a3899ad84a88334914f379be46d455cbf92e5cf4b39d34985d452d2583baf19967fa76cb5c17bc9e245529d0b98745721aa7200ecaf7a",
   "dependencies": {
     "axios": "^1.12.2",
+    "dotenv": "^17.2.3",
     "paperless-node": "^1.0.7",
+    "pino": "^9.12.0",
+    "pino-pretty": "^13.1.1",
     "token.js": "^0.7.1",
     "typescript": "^5.9.3",
-    "vitest": "^3.2.4"
+    "vitest": "^3.2.4",
+    "zod": "^4.1.11"
+  },
+  "devDependencies": {
+    "@types/node": "^24.6.1",
+    "prettier": "^3.6.2",
+    "tsx": "^4.20.6"
   }
 }
