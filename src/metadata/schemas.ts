@@ -1,19 +1,19 @@
 import { z } from 'zod';
 
-const unknownResponseSchema = z.object({
-  status: z.literal('unknown'),
-  reason: z.string().optional(),
-});
-
-export const TitleResponseSchema = z.discriminatedUnion('status', [
-  z.object({
-    status: z.literal('ok'),
-    value: z.string().trim().min(1).max(128),
-    confidence: z.number().min(0).max(1).optional(),
-    reason: z.string().optional(),
-  }),
-  unknownResponseSchema,
-]);
+export const TitleResponseSchema = z
+  .object({
+    status: z.enum(['ok', 'unknown']),
+    value: z.union([z.string().trim().min(1).max(128), z.null()]),
+    confidence: z.union([z.number().min(0).max(1), z.null()]),
+    reason: z.union([z.string(), z.null()]),
+  })
+  .superRefine((obj, ctx) => {
+    if (obj.status === 'ok') {
+      if (obj.value === null) {
+        ctx.addIssue({ code: 'custom', message: 'value is required when status is ok', path: ['value'] });
+      }
+    }
+  });
 
 const isoDate = z
   .string()
@@ -23,36 +23,53 @@ const isoDate = z
     message: 'Invalid date',
   });
 
-export const DateResponseSchema = z.discriminatedUnion('status', [
-  z.object({
-    status: z.literal('ok'),
-    value: isoDate,
-    reason: z.string().optional(),
-  }),
-  unknownResponseSchema,
-]);
+export const DateResponseSchema = z
+  .object({
+    status: z.enum(['ok', 'unknown']),
+    value: z.union([isoDate, z.null()]),
+    reason: z.union([z.string(), z.null()]),
+  })
+  .superRefine((obj, ctx) => {
+    if (obj.status === 'ok') {
+      if (obj.value === null) {
+        ctx.addIssue({ code: 'custom', message: 'value is required when status is ok', path: ['value'] });
+      }
+    }
+  });
 
 const entityValueSchema = z.object({
   name: z.string().trim().min(1).max(128),
-  create: z.boolean().optional(),
-  reason: z.string().optional(),
+  create: z.union([z.boolean(), z.null()]),
+  reason: z.union([z.string(), z.null()]),
 });
 
-export const CorrespondentResponseSchema = z.discriminatedUnion('status', [
-  z.object({
-    status: z.literal('ok'),
-    value: entityValueSchema,
-  }),
-  unknownResponseSchema,
-]);
+export const CorrespondentResponseSchema = z
+  .object({
+    status: z.enum(['ok', 'unknown']),
+    value: z.union([entityValueSchema, z.null()]),
+    reason: z.union([z.string(), z.null()]),
+  })
+  .superRefine((obj, ctx) => {
+    if (obj.status === 'ok') {
+      if (obj.value === null) {
+        ctx.addIssue({ code: 'custom', message: 'value is required when status is ok', path: ['value'] });
+      }
+    }
+  });
 
-export const DoctypeResponseSchema = z.discriminatedUnion('status', [
-  z.object({
-    status: z.literal('ok'),
-    value: entityValueSchema,
-  }),
-  unknownResponseSchema,
-]);
+export const DoctypeResponseSchema = z
+  .object({
+    status: z.enum(['ok', 'unknown']),
+    value: z.union([entityValueSchema, z.null()]),
+    reason: z.union([z.string(), z.null()]),
+  })
+  .superRefine((obj, ctx) => {
+    if (obj.status === 'ok') {
+      if (obj.value === null) {
+        ctx.addIssue({ code: 'custom', message: 'value is required when status is ok', path: ['value'] });
+      }
+    }
+  });
 
 type TitleResponse = z.infer<typeof TitleResponseSchema>;
 export type DateResponse = z.infer<typeof DateResponseSchema>;
