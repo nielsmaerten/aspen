@@ -1,0 +1,25 @@
+services:
+  aspen:
+    build:
+      context: .
+    image: ghcr.io/nielsmaerten/aspen:latest
+    restart: unless-stopped
+    env_file:
+      - .env
+    environment:
+      PAPERLESS_BASE_URL: ${PAPERLESS_BASE_URL?PAPERLESS_BASE_URL is required}
+      PAPERLESS_API_TOKEN: ${PAPERLESS_API_TOKEN?PAPERLESS_API_TOKEN is required}
+      ASPEN_AI_MODEL: ${ASPEN_AI_MODEL?ASPEN_AI_MODEL is required}
+      ASPEN_AI_PROVIDER: ${ASPEN_AI_PROVIDER:-openai}
+      ASPEN_INTERVAL: ${ASPEN_INTERVAL:-}
+      ASPEN_SET_TITLE: ${ASPEN_SET_TITLE:-true}
+      ASPEN_SET_CORRESPONDENT: ${ASPEN_SET_CORRESPONDENT:-true}
+      ASPEN_SET_DATE: ${ASPEN_SET_DATE:-true}
+      ASPEN_SET_DOCTYPE: ${ASPEN_SET_DOCTYPE:-true}
+      ASPEN_ALLOW_NEW_DOCTYPES: ${ASPEN_ALLOW_NEW_DOCTYPES:-false}
+      ASPEN_ALLOW_NEW_CORRESPONDENTS: ${ASPEN_ALLOW_NEW_CORRESPONDENTS:-false}
+      ASPEN_UPLOAD_ORIGINAL: ${ASPEN_UPLOAD_ORIGINAL:-false}
+      LOG_LEVEL: ${LOG_LEVEL:-info}
+    volumes:
+      - ./prompts:/app/prompts
+      - ./logs:/app/logs

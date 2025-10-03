@@ -16,7 +16,7 @@ import type { EntitySelection } from './domain/metadata.js';
 import { normalizeName } from './utils/text.js';
 import type { AspenConfig } from './config/types.js';
 
-export async function run(runOnce = false): Promise<void> {
+export async function run(runOnce = false, checkShutdown?: () => boolean): Promise<void> {
   const config = loadConfig();
   const { logger, logFilePath } = await createLogger();
 
@@ -39,6 +39,12 @@ export async function run(runOnce = false): Promise<void> {
   const tagSet = await ensureTags(paperless, config, logger);
 
   while (true) {
+    // Check for shutdown before processing next document
+    if (checkShutdown && checkShutdown()) {
+      logger.info('Shutdown requested, stopping document processing');
+      break;
+    }
+
     try {
       const processed = await processNextDocument({
         paperless,
