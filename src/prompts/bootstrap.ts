@@ -3,9 +3,11 @@ import { access, copyFile, mkdir } from 'node:fs/promises';
 import path from 'node:path';
 
 import { METADATA_FIELDS } from '../domain/metadata.js';
+import { getExecutableDir } from '../utils/runtime-paths.js';
 
-const PROMPTS_DIR = path.resolve(process.cwd(), 'prompts');
-const DEFAULT_PROMPTS_DIR = path.resolve(process.cwd(), 'prompts-default');
+const runtimeDir = getExecutableDir();
+const PROMPTS_DIR = path.join(runtimeDir, 'prompts');
+const DEFAULT_PROMPTS_DIR = path.join(runtimeDir, 'prompts-default');
 
 export async function ensurePromptDefaults(): Promise<void> {
   await mkdir(PROMPTS_DIR, { recursive: true });

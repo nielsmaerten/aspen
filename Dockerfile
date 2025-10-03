@@ -16,6 +16,7 @@ COPY tsconfig.json tsconfig.build.json ./
 COPY vitest.config.ts ./
 COPY src ./src
 COPY prompts ./prompts
+COPY prompts-default ./prompts-default
 RUN pnpm run build
 RUN pnpm prune --prod
 
@@ -25,6 +26,6 @@ COPY package.json ./
 COPY --from=build /app/node_modules ./node_modules
 COPY --from=build /app/dist ./dist
 COPY --from=build /app/prompts ./prompts
-COPY --from=build /app/prompts ./prompts-default
+COPY --from=build /app/prompts-default ./prompts-default
 RUN mkdir -p /app/prompts /app/logs
 CMD ["node", "dist/index.js"]
