@@ -1,5 +1,5 @@
 # Aspen
-## Implementation plan
+## Implementation plan Scope 1 (DONE)
 - Establish the base project structure: confirm TypeScript/ESM config, wire up Prettier, and ensure `dotenv` loads before any modules that need configuration.
 - Implement a configuration module that reads env vars via `zod`, validates tag names/feature toggles, and exposes typed settings for AI provider selection.
 - Create thin clients for dependencies: wrap `paperless-node` for document search/download/update/tag mutations; wrap `token.js` with a simple adapter that maps provider options and propagates any failure so the main loop halts for inspection.
@@ -10,16 +10,6 @@
 - Integrate tagging workflow: add `$ai-processed` or `$ai-review`, update metadata fields with straightforward error handling to ensure partial failures stop the loop, and remove `$ai-queue` only after another tag is applied successfully.
 - Add logging with `pino`: open a timestamped logfile per run, stream pretty-printed logs to the console via `pino-pretty`, and capture key events (start, provider calls, tagging outcomes).
 - Write automated tests with `vitest`: unit tests for config and AI parsing using mocked clients, plus an integration test that invokes the real Paperless instance when `ASPEN_DEV_RUN_INTEGRATION=true`.
-
-## Implementation guidelines
-- Keep functions small and focused; aim for single responsibility.
-- Don't repeat yourself; abstract repeated logic into reusable functions or classes.
-- Don't reinvent the wheel; leverage existing npm packages where appropriate.
-- Use `async/await` for all asynchronous operations; avoid raw Promises.
-- Handle errors gracefully; log meaningful messages and fail fast when necessary.
-- Write clear, concise comments to explain non-obvious logic or decisions.
-- Follow consistent naming conventions and code style; use Prettier to format code automatically.
-- Don't over-engineer; start simple and iterate based on real needs and feedback.
  
 ## Short description
 - Aspen's goal is to automatically extract metadata from documents in Paperless-ngx using AI, 
