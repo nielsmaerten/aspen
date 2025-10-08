@@ -1,38 +1,54 @@
-# Aspen
+# Aspen: AI assisted Metadata for Paperless-ngx
 
-Aspen keeps your Paperless-ngx archive tidy by using AI to fill in missing metadata. Tag a document with `000-ai-queue` and Aspen will propose a title, date, correspondent, and document type.
+Aspen keeps your Paperless-ngx archive organized by using AI to fill in missing metadata.
 
-## Highlights
-- Automates metadata for Paperless-ngx using your preferred large language model.
-- Lets you choose which fields Aspen is allowed to change and whether it may create new correspondents or document types.
-- When the AI is uncertain, it tags the document with `000-ai-review` for manual review.
-- Supports many AI providers via [token.js](https://github.com/verybigthings/token).
-- Editable prompt templates live in `prompt-templates/` so you can fine-tune how metadata is extracted.
+Tag a document with `000-ai-queue`, and Aspen will propose a title, date, correspondent, and document type.
 
-## What You Need
-- Paperless-ngx with an API token.
-- An API key for one of the supported AI providers, or:
-- A compatible local model (e.g. via Ollama or a local LLM server).
+## Features
+
+* Automatically fills in missing metadata in Paperless-ngx.
+* Uses any compatible LLM (OpenAI, Anthropic, Ollama, etc.) via [token.js](https://github.com/verybigthings/token).
+* Configurable: choose which fields Aspen may modify and whether it can create new correspondents or document types.
+* Flags uncertain results with `000-ai-review` for manual checking.
+* Customizable prompt templates in `prompt-templates/`.
+
+## Requirements
+
+* Running Paperless-ngx instance with API token.
+* API key for a supported AI provider **or** access to a local LLM (e.g. Ollama).
+
+## Quick Start (Docker)
+
+Running Aspen with Docker is the recommended approach:
+
+```zsh
+docker run -d \
+  -e PAPERLESS_BASE_URL=https://paperless.example.com \
+  -e PAPERLESS_API_TOKEN=your_token \
+  -e OPENAI_API_KEY=your_api_key \
+  ghcr.io/nielsmaerten/aspen:latest
+```
+
+See [`docker-compose.yml`](./docker-compose.yml) for a more complete example.
 
 ## Configuration
-Aspen is configured entirely with environment variables. Review `.env.example` for details.
 
-## Logging
-Aspen emits colorized, human-readable logs to the console and optionally mirrors them to a file. Set `ASPEN_LOG_LEVEL` to control verbosity (`trace`, `debug`, `info`, `warn`, `error`, `fatal`, `silent`). Leave `ASPEN_LOG_FILE` unset to mirror logs to `./logs/aspen.log`, point it at another path for a custom location, or set it to a falsy value (empty, `false`, `off`, `no`, `0`, `none`) to disable file output altogether.
+All settings are controlled through environment variables. Key variables:
 
-## Quick Start
+* `PAPERLESS_BASE_URL` – Paperless-ngx base URL
+* `PAPERLESS_API_TOKEN` – Paperless API token
+* `OPENAI_API_KEY` – OpenAI API key (if using OpenAI)
 
-### Docker
-- Copy `.env.example` to `.env` and fill in the required API credentials.
-- Build the container with `docker compose build aspen`.
-- Start Aspen with `docker compose up aspen`; the container loads environment variables from `.env` and writes logs to `./logs`.
-- The container expects the environment variables documented in `.env.example`, including `PAPERLESS_BASE_URL`, `PAPERLESS_API_TOKEN`, and an AI provider API key.
-
-### Node.js
-- Install dependencies with `pnpm install`.
-- Compile the project using `pnpm build`.
-- Launch Aspen locally via `pnpm start`.
-
+Refer to [.env.example](./.env.example) for the full list of configuration options.
 
 ## Custom Prompts
-Aspen uses prompt templates stored in the `prompt/` directory. You can customize these templates to better suit your document types and metadata requirements. Each template is a text file that defines how Aspen interacts with the AI model to extract metadata. If there's no prompt template for a specific document type, Aspen will copy the default template to `prompt-templates/` for you to customize.
+
+Prompt templates define how metadata is extracted. Aspen stores them in `prompt-templates/`. Edit these to fine-tune extraction or copy the default template to create new ones for specific document types.
+
+## Local Development
+
+```bash
+pnpm install
+pnpm build
+pnpm start
+```

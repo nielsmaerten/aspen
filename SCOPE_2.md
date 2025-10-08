@@ -1,5 +1,5 @@
 # Aspen
-## Scope 2: Releases
+## Scope 2: Releases (DONE)
 
 ### Docker
 - Add a Dockerfile that builds from an official Node LTS base (e.g. `node:20-slim`), installs dependencies with `pnpm`, copies compiled output plus prompts, and sets the CLI entrypoint.

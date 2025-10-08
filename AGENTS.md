@@ -10,14 +10,15 @@
 - `pnpm test` / `pnpm test:watch` – execute Vitest once or in watch mode.
 - `pnpm lint` / `pnpm format` – validate or apply Prettier to code, tests.
 
-## Coding Style & Implementation Guidelines
+## Coding Style
 Strict TypeScript ESM with two-space indentation enforced by Prettier. Prefer named exports, camelCase for values, PascalCase for types or classes, and uppercase snake case for constants. Keep files aligned with their primary export and ship focused modules.
 
+## Code Quality Guidelines
+- Don't over-engineer solutions; start simple, iterate as needs emerge.
 - Keep functions small; reuse helpers instead of duplicating logic.
 - Prefer mature npm packages over bespoke utilities.
 - Use `async/await` for all async paths and log concise errors with `pino` before bubbling failures.
-- Add short comments when intent might be opaque.
-- Start simple, iterate as needs emerge, and rely on Prettier for formatting.
+- Add short, focused comments for complex logic; avoid obvious comments.
 
 ## Testing Guidelines
 - Place unit specs in `test/unit`; do not colocate them with source files.
@@ -28,7 +29,3 @@ Strict TypeScript ESM with two-space indentation enforced by Prettier. Prefer na
 
 ## Commit & Pull Request Guidelines
 Follow conventional commits (`feat:`, `refactor:`, `fix:`) with subjects under 72 characters and optional bodies for context. Pull requests should reference issues, list manual or automated checks, and attach screenshots or logs for visible changes.
-
-## Environment & Configuration Tips
-Start from `.env.example`, add Paperless credentials, and set the required AI provider key. Adjust `ASPEN_INTERVAL` and `ASPEN_TAG_*` to match the workflow. Coordinate before toggling `ASPEN_DEV_RUN_INTEGRATION`; leave it `false` unless someone can observe Paperless-side effects.
-Logging defaults to pretty console output plus `./logs/aspen.log`; tune with `ASPEN_LOG_LEVEL` and `ASPEN_LOG_FILE` (set to a path for custom location or falsy to disable file mirroring).
