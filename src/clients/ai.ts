@@ -1,4 +1,9 @@
-import { TokenJS, type CompletionResponse, type ChatCompletionMessageParam } from 'token.js';
+import {
+  TokenJS,
+  type CompletionResponse,
+  type ChatCompletionMessageParam,
+  ConfigOptions,
+} from 'token.js';
 
 import type { AspenConfig } from '../config/types.js';
 
@@ -32,9 +37,13 @@ export class AiService {
   private readonly client: TokenJS;
 
   constructor(private readonly config: AspenConfig['ai']) {
-    this.client = new TokenJS();
+    const opts: ConfigOptions = {};
+    if (this.config.provider === 'openai-compatible') {
+      opts.baseURL = process.env.OPENAI_COMPATIBLE_BASE_URL;
+      opts.apiKey = process.env.OPENAI_COMPATIBLE_API_KEY;
+    }
+    this.client = new TokenJS(opts);
   }
-
   async complete(request: AiCompletionRequest): Promise<AiCompletionResult> {
     const response = await this.client.chat.completions.create({
       provider: this.config.provider,

@@ -108,7 +108,7 @@ function validateLogLevel(level: string | undefined): SupportedLevel | undefined
   if (lowercase && allowedLevels.includes(lowercase)) {
     return lowercase as SupportedLevel;
   }
-  return "info";
+  return 'info';
 }
 
 function resolveFilePath(raw: string | undefined): string | undefined {

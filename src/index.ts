@@ -2,12 +2,7 @@
 import { CronJob } from 'cron';
 import { loadEnvironment } from './bootstrap/env.js';
 import { run } from './app.js';
-import {
-  flushLogger,
-  getLogFilePath,
-  getLogger,
-  initializeLogging,
-} from './logging/index.js';
+import { flushLogger, getLogFilePath, getLogger, initializeLogging } from './logging/index.js';
 
 loadEnvironment();
 initializeLogging();
@@ -59,12 +54,14 @@ function getInterval(): number | undefined {
   return Number.isInteger(watchMinutes) && watchMinutes > 0 ? watchMinutes : undefined;
 }
 
-main().catch((error) => {
-  logger.error({ err: error }, 'Aspen failed to start');
-  process.exitCode = 1;
-}).finally(() => {
-  flushLogger();
-});
+main()
+  .catch((error) => {
+    logger.error({ err: error }, 'Aspen failed to start');
+    process.exitCode = 1;
+  })
+  .finally(() => {
+    flushLogger();
+  });
 
 // Behave well in containers
 process.on('SIGINT', () => {
