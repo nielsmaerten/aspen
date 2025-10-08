@@ -19,6 +19,7 @@ export interface AspenConfig {
       queue: string;
       processed: string;
       review: string;
+      error: string;
     };
   };
   metadata: MetadataConfig;

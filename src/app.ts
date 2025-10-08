@@ -61,6 +61,7 @@ interface TagSet {
   queue: number;
   processed: number;
   review: number;
+  error: number;
 }
 
 async function processNextDocument(context: ProcessingContext): Promise<boolean> {
@@ -92,18 +93,35 @@ async function processNextDocument(context: ProcessingContext): Promise<boolean>
     logger,
   };
 
-  const results = await extractMetadata(
-    job,
-    extractionContext,
-    strategies,
-    config.metadata.enabledFields,
-  );
-  await materializeNewEntities(results, paperless, allowlists, logger);
+  let status: 'processed' | 'review' | 'error';
+  let updatePayload: DocumentUpdatePayload;
+  let results: ExtractedMetadata | undefined;
 
-  const review = requiresReview(results);
+  try {
+    results = await extractMetadata(
+      job,
+      extractionContext,
+      strategies,
+      config.metadata.enabledFields,
+    );
+    await materializeNewEntities(results, paperless, allowlists, logger);
 
-  const updatePayload = buildUpdatePayload(results);
-  const tagsAfterStatus = planTagUpdate(document.tags, tagSet, review);
+    const review = requiresReview(results);
+    status = review ? 'review' : 'processed';
+    updatePayload = buildUpdatePayload(results);
+  } catch (error) {
+    logger.error(
+      {
+        documentId: document.id,
+        err: error,
+      },
+      'AI provider error during metadata extraction',
+    );
+    status = 'error';
+    updatePayload = { remove_inbox_tags: false };
+  }
+
+  const tagsAfterStatus = planTagUpdate(document.tags, tagSet, status);
 
   await paperless.updateDocument(document.id, {
     ...updatePayload,
@@ -120,8 +138,8 @@ async function processNextDocument(context: ProcessingContext): Promise<boolean>
   logger.info(
     {
       documentId: document.id,
-      status: review ? 'review' : 'processed',
-      results: summarizeResults(results),
+      status,
+      results: results ? summarizeResults(results) : undefined,
     },
     'Document processed',
   );
@@ -137,11 +155,13 @@ async function ensureTags(
   const queue = await ensureTag(paperless, config.paperless.tags.queue, logger);
   const processed = await ensureTag(paperless, config.paperless.tags.processed, logger);
   const review = await ensureTag(paperless, config.paperless.tags.review, logger);
+  const error = await ensureTag(paperless, config.paperless.tags.error, logger);
 
   return {
     queue: queue.id,
     processed: processed.id,
     review: review.id,
+    error: error.id,
   };
 }
 
@@ -306,16 +326,20 @@ function buildUpdatePayload(results: ExtractedMetadata): DocumentUpdatePayload {
 function planTagUpdate(
   currentTags: number[],
   tagSet: TagSet,
-  review: boolean,
+  status: 'processed' | 'review' | 'error',
 ): {
   withQueue: number[];
   queueRemoved: number[];
 } {
-  const desiredTag = review ? tagSet.review : tagSet.processed;
+  const desiredTag =
+    status === 'error' ? tagSet.error : status === 'review' ? tagSet.review : tagSet.processed;
   const tagsWithNew = new Set(currentTags);
   tagsWithNew.add(desiredTag);
-  const tagToRemove = review ? tagSet.processed : tagSet.review;
-  tagsWithNew.delete(tagToRemove);
+
+  // Remove the other status tags
+  if (status !== 'processed') tagsWithNew.delete(tagSet.processed);
+  if (status !== 'review') tagsWithNew.delete(tagSet.review);
+  if (status !== 'error') tagsWithNew.delete(tagSet.error);
 
   const tagsWithoutQueue = new Set(tagsWithNew);
   tagsWithoutQueue.delete(tagSet.queue);
