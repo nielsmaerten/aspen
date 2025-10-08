@@ -1,6 +1,6 @@
 {
   "name": "aspen",
-  "version": "0.0.5",
+  "version": "0.1.0",
   "description": "Automate Paperless-ngx metadata enrichment with AI",
   "type": "module",
   "main": "dist/index.js",
