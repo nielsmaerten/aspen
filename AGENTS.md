@@ -1,14 +1,14 @@
 # Repository Guidelines
 
 ## Project Structure & Module Organization
-`src/index.ts` bootstraps Aspen and delegates to `src/app.ts`. Helpers sit in `src/bootstrap` and `src/config`, API clients in `src/clients`, shared domain logic in `src/domain`, and utilities in `src/utils` and `src/logging`. Prompt templates live under `prompts/`. Tests mirror runtime modules in `test/unit` and `test/integration`, and builds emit to `dist/`.
+`src/index.ts` bootstraps Aspen and delegates to `src/app.ts`. Helpers sit in `src/bootstrap` and `src/config`, API clients in `src/clients`, shared domain logic in `src/domain`, and utilities in `src/utils` and `src/logging`. Prompt templates ship under `prompt-templates/` and are copied into `prompts/` at runtime. Tests mirror runtime modules in `test/unit` and `test/integration`, and builds emit to `dist/`.
 
 ## Build, Test, and Development Commands
 - `pnpm install` – sync dependencies when the lockfile changes.
 - `pnpm dev` – run `src/index.ts` with live reload via `tsx`.
 - `pnpm build` – type-check and emit ESM bundles to `dist/`.
 - `pnpm test` / `pnpm test:watch` – execute Vitest once or in watch mode.
-- `pnpm lint` / `pnpm format` – validate or apply Prettier to code, tests, and prompts.
+- `pnpm lint` / `pnpm format` – validate or apply Prettier to code, tests.
 
 ## Coding Style & Implementation Guidelines
 Strict TypeScript ESM with two-space indentation enforced by Prettier. Prefer named exports, camelCase for values, PascalCase for types or classes, and uppercase snake case for constants. Keep files aligned with their primary export and ship focused modules.

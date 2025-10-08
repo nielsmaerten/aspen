@@ -7,7 +7,7 @@ Aspen keeps your Paperless-ngx archive tidy by using AI to fill in missing metad
 - Lets you choose which fields Aspen is allowed to change and whether it may create new correspondents or document types.
 - When the AI is uncertain, it tags the document with `$ai-review` for manual review.
 - Supports many AI providers via [token.js](https://github.com/verybigthings/token).
-- Editable prompt templates so you can fine-tune how metadata is extracted.
+- Editable prompt templates live in `prompt-templates/` so you can fine-tune how metadata is extracted.
 
 ## What You Need
 - Paperless-ngx with an API token.
@@ -27,4 +27,4 @@ Aspen is configured entirely with environment variables. Review `.env.example` f
 
 
 ## Custom Prompts
-Editable prompt templates live in `prompts/`. Edit them to adjust how Aspen extracts metadata.
+Aspen uses prompt templates stored in the `prompt/` directory. You can customize these templates to better suit your document types and metadata requirements. Each template is a text file that defines how Aspen interacts with the AI model to extract metadata. If there's no prompt template for a specific document type, Aspen will copy the default template to `prompt-templates/` for you to customize.
