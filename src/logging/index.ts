@@ -19,10 +19,11 @@ export async function createLogger(): Promise<CreateLoggerResult> {
 
   const prettyStream = pretty({
     colorize: process.stdout.isTTY,
-    translateTime: 'SYS:standard',
+    translateTime: 'SYS:HH:MM:ss',
     ignore: 'pid,hostname',
+    hideObject: true,
   });
-  prettyStream.pipe(process.stdout);
+  //prettyStream.pipe(process.stdout);
 
   const fileStream = pino.destination({ dest: logFilePath, sync: false });
 

@@ -18,18 +18,7 @@ import type { AspenConfig } from './config/types.js';
 
 export async function run(): Promise<void> {
   const config = loadConfig();
-  const { logger, logFilePath } = await createLogger();
-
-  logger.info(
-    {
-      logFilePath,
-      provider: config.ai.provider,
-      model: config.ai.model,
-      uploadOriginal: config.ai.uploadOriginal,
-      enabledFields: config.metadata.enabledFields,
-    },
-    'Aspen starting',
-  );
+  const { logger } = await createLogger();
 
   const paperless = PaperlessService.fromConfig(config.paperless);
   const ai = new AiService(config.ai);
