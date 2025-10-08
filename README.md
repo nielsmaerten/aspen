@@ -17,6 +17,9 @@ Aspen keeps your Paperless-ngx archive tidy by using AI to fill in missing metad
 ## Configuration
 Aspen is configured entirely with environment variables. Review `.env.example` for details.
 
+## Logging
+Aspen emits colorized, human-readable logs to the console and optionally mirrors them to a file. Set `ASPEN_LOG_LEVEL` to control verbosity (`trace`, `debug`, `info`, `warn`, `error`, `fatal`, `silent`). Leave `ASPEN_LOG_FILE` unset to mirror logs to `./logs/aspen.log`, point it at another path for a custom location, or set it to a falsy value (empty, `false`, `off`, `no`, `0`, `none`) to disable file output altogether.
+
 ## Quick Start
 
 ### Docker

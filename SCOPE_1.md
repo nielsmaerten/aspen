@@ -8,7 +8,7 @@
 - Implement metadata extractors for each field that call the AI client, validate responses with `zod`, enforce allowlists for correspondents/doctypes (respecting `Unknown` and creation flags), and determine whether a document should be marked for review when the AI responds with `Unknown` or an invalid value.
 - Develop the orchestration loop: poll Paperless for one queued document, fetch the current allowlisted correspondents and doctypes before each iteration, fetch text or upload the original based on configuration, run metadata extractors (one by one), aggregate results, and decide between processed or review tags.
 - Integrate tagging workflow: add `000-ai-processed` or `000-ai-review`, update metadata fields with straightforward error handling to ensure partial failures stop the loop, and remove `000-ai-queue` only after another tag is applied successfully.
-- Add logging with `pino`: open a timestamped logfile per run, stream pretty-printed logs to the console via `pino-pretty`, and capture key events (start, provider calls, tagging outcomes).
+- Add logging with `pino`: emit human-readable console output via `pino-pretty`, optionally mirror events to a file sink, and capture key events (start, provider calls, tagging outcomes).
 - Write automated tests with `vitest`: unit tests for config and AI parsing using mocked clients, plus an integration test that invokes the real Paperless instance when `ASPEN_DEV_RUN_INTEGRATION=true`.
  
 ## Short description

@@ -1,7 +1,6 @@
 import type { Logger } from 'pino';
 
 import { loadConfig } from './config/index.js';
-import { createLogger } from './logging/index.js';
 import { PaperlessService, type DocumentUpdatePayload } from './clients/paperless.js';
 import { AiService } from './clients/ai.js';
 import { PromptRepository } from './prompts/index.js';
@@ -13,12 +12,13 @@ import type { DocumentJob, PaperlessDocument } from './domain/document.js';
 import { buildAllowlist, findAllowlistMatch } from './domain/allowlists.js';
 import type { DocumentAllowlists, EntityAllowlistItem } from './domain/allowlists.js';
 import type { EntitySelection } from './domain/metadata.js';
-import { normalizeName } from './utils/text.js';
 import type { AspenConfig } from './config/types.js';
+import { getLogger } from './logging/index.js';
+import { normalizeName } from './utils/text.js';
 
-export async function run(): Promise<void> {
+export async function run(passedLogger: Logger = getLogger()): Promise<void> {
   const config = loadConfig();
-  const { logger } = await createLogger();
+  const logger = passedLogger;
 
   const paperless = PaperlessService.fromConfig(config.paperless);
   const ai = new AiService(config.ai);

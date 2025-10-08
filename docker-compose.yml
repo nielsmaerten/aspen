@@ -5,7 +5,7 @@ services:
       - .env
     environment:
       - ASPEN_WATCH=1
-      - ASPEN_LOGLEVEL=info
+      - ASPEN_LOG_LEVEL=info
     volumes:
       - ./logs:/app/logs
       - ./prompts:/app/prompts

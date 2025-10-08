@@ -12,7 +12,7 @@
     "format": "prettier --write \"{src,test}/**/*.{ts,js,json}\"",
     "lint": "prettier --check \"{src,test}/**/*.{ts,js,json}\"",
     "start": "pnpm run build && node dist/index.js",
-    "test": "vitest run",
+    "test": "vitest run && tsc --noEmit",
     "test:watch": "vitest"
   },
   "repository": {

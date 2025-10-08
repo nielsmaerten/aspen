@@ -1,59 +1,118 @@
-import { mkdir } from 'node:fs/promises';
+import { mkdirSync } from 'node:fs';
 import path from 'node:path';
 
-import pino, { type DestinationStream, type StreamEntry } from 'pino';
+import pino, {
+  stdTimeFunctions,
+  type DestinationStream,
+  type Level,
+  type LevelWithSilent,
+  type Logger,
+  type StreamEntry,
+} from 'pino';
 import pretty from 'pino-pretty';
 
-const LOG_DIRECTORY = path.resolve(process.cwd(), 'logs');
-const SUPPORTED_LEVELS = new Set(['error', 'warn', 'info'] as const);
-type SupportedLevel = 'error' | 'warn' | 'info';
+type SupportedLevel = LevelWithSilent;
 
-interface CreateLoggerResult {
-  logger: pino.Logger;
-  logFilePath?: string;
+let sharedLogger: Logger | undefined;
+let sharedLogFilePath: string | undefined;
+
+export function initializeLogging(): Logger {
+  if (!sharedLogger) {
+    const { logger, logFilePath } = buildLogger();
+    sharedLogger = logger;
+    sharedLogFilePath = logFilePath;
+  }
+
+  return sharedLogger;
 }
 
-export async function createLogger(): Promise<CreateLoggerResult> {
-  const normalized = normalizeLogLevel(process.env.ASPEN_LOGLEVEL);
-  const consoleLevel: SupportedLevel = normalized ?? 'info';
+export function getLogger(): Logger {
+  if (!sharedLogger) {
+    return initializeLogging();
+  }
 
-  const prettyStream = pretty({
+  return sharedLogger;
+}
+
+export function getLogFilePath(): string | undefined {
+  return sharedLogFilePath;
+}
+
+export function flushLogger(): void {
+  if (sharedLogger && typeof sharedLogger.flush === 'function') {
+    sharedLogger.flush();
+  }
+}
+
+function buildLogger(): { logger: Logger; logFilePath?: string } {
+  const rawLevel = process.env.ASPEN_LOG_LEVEL;
+  const consoleLevel = validateLogLevel(rawLevel) ?? 'info';
+
+  const consoleStream = pretty({
     colorize: process.stdout.isTTY,
     translateTime: 'SYS:HH:MM:ss',
     ignore: 'pid,hostname',
-    hideObject: true,
+    singleLine: false,
+    levelFirst: true,
+    messageKey: 'msg',
+    errorLikeObjectKeys: ['err', 'error'],
+    errorProps: '*',
   });
 
-  const streams: StreamEntry<SupportedLevel>[] = [
-    { level: consoleLevel, stream: prettyStream as DestinationStream },
-  ];
-
-  let logFilePath: string | undefined;
-  if (normalized) {
-    await mkdir(LOG_DIRECTORY, { recursive: true });
-    logFilePath = path.join(LOG_DIRECTORY, `aspen.log`);
-    const fileStream = pino.destination({ dest: logFilePath, sync: false });
-    streams.push({ level: normalized, stream: fileStream });
+  const streams: StreamEntry[] = [];
+  if (consoleLevel !== 'silent') {
+    streams.push({
+      level: consoleLevel as Level,
+      stream: consoleStream as DestinationStream,
+    });
   }
+
+  const resolvedFilePath = resolveFilePath(process.env.ASPEN_LOG_FILE);
+
+  if (resolvedFilePath && consoleLevel !== 'silent') {
+    mkdirSync(path.dirname(resolvedFilePath), { recursive: true });
+    const fileStream = pino.destination({ dest: resolvedFilePath, sync: false });
+    streams.push({ level: consoleLevel as Level, stream: fileStream });
+  }
+
+  const destination =
+    streams.length === 0
+      ? undefined
+      : streams.length === 1
+        ? streams[0]!.stream
+        : pino.multistream(streams);
 
   const logger = pino(
     {
       level: consoleLevel,
       base: undefined,
+      timestamp: stdTimeFunctions.isoTime,
       formatters: {
         level(label) {
-          return { level: label };
+          return { level: label.toUpperCase() };
         },
       },
     },
-    pino.multistream(streams),
+    destination,
   );
 
-  return { logger, logFilePath };
+  return {
+    logger,
+    logFilePath: resolvedFilePath,
+  };
 }
 
-function normalizeLogLevel(level: string | undefined): SupportedLevel | undefined {
-  if (!level) return undefined;
-  const normalized = level.trim().toLowerCase() as SupportedLevel;
-  return SUPPORTED_LEVELS.has(normalized) ? normalized : undefined;
+function validateLogLevel(level: string | undefined): SupportedLevel | undefined {
+  const lowercase = level?.toLowerCase().trim();
+  const allowedLevels = ['trace', 'debug', 'info', 'warn', 'error', 'fatal', 'silent'];
+  if (lowercase && allowedLevels.includes(lowercase)) {
+    return lowercase as SupportedLevel;
+  }
+  return "info";
+}
+
+function resolveFilePath(raw: string | undefined): string | undefined {
+  if (!raw || raw.trim().toLowerCase() === 'off') return undefined;
+  const resolvedPath = path.resolve(process.cwd(), raw.trim());
+  return resolvedPath === '.' ? path.join(process.cwd(), 'aspen.log') : resolvedPath;
 }

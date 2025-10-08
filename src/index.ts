@@ -2,12 +2,19 @@
 import { CronJob } from 'cron';
 import { loadEnvironment } from './bootstrap/env.js';
 import { run } from './app.js';
-import { createLogger } from './logging/index.js';
+import {
+  flushLogger,
+  getLogFilePath,
+  getLogger,
+  initializeLogging,
+} from './logging/index.js';
 
 loadEnvironment();
+initializeLogging();
+const logger = getLogger();
+const logFilePath = getLogFilePath();
 
 let isRunning = false;
-const { logger } = await createLogger();
 
 async function runOnce(): Promise<void> {
   if (isRunning) return;
@@ -41,6 +48,9 @@ async function main(): Promise<void> {
     waitForCompletion: true, // Prevent overlapping runs
   });
   logger.info(`Aspen started, checking every ${interval} minute(s)`);
+  if (logFilePath) {
+    logger.info({ logFilePath }, 'Writing logs to file');
+  }
 }
 
 function getInterval(): number | undefined {
@@ -50,10 +60,18 @@ function getInterval(): number | undefined {
 }
 
 main().catch((error) => {
-  console.error('Aspen failed to start', error);
+  logger.error({ err: error }, 'Aspen failed to start');
   process.exitCode = 1;
+}).finally(() => {
+  flushLogger();
 });
 
 // Behave well in containers
-process.on('SIGINT', () => process.exit(0));
-process.on('SIGTERM', () => process.exit(0));
+process.on('SIGINT', () => {
+  flushLogger();
+  process.exit(0);
+});
+process.on('SIGTERM', () => {
+  flushLogger();
+  process.exit(0);
+});
