@@ -19,11 +19,16 @@ Aspen is configured entirely with environment variables. Review `.env.example` f
 
 ## Quick Start
 
-### TODO Binaries
+### Docker
+- Copy `.env.example` to `.env` and fill in the required API credentials.
+- Build the container with `docker compose build aspen`.
+- Start Aspen with `docker compose up aspen`; the container loads environment variables from `.env` and writes logs to `./logs`.
+- The container expects the environment variables documented in `.env.example`, including `PAPERLESS_BASE_URL`, `PAPERLESS_API_TOKEN`, and an AI provider API key.
 
-### TODO Docker
-
-### TODO Node.js
+### Node.js
+- Install dependencies with `pnpm install`.
+- Compile the project using `pnpm build`.
+- Launch Aspen locally via `pnpm start`.
 
 
 ## Custom Prompts

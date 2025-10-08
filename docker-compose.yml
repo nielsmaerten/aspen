@@ -1,0 +1,14 @@
+services:
+  aspen:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: aspen:local
+    env_file:
+      - .env
+    environment:
+      - ASPEN_WATCH=1
+    volumes:
+      - ./logs:/app/logs
+      - ./prompts:/app/prompts
+    restart: unless-stopped

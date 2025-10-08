@@ -2,11 +2,12 @@
 import { CronJob } from 'cron';
 import { loadEnvironment } from './bootstrap/env.js';
 import { run } from './app.js';
+import { createLogger } from './logging/index.js';
 
 loadEnvironment();
 
 let isRunning = false;
-let watchJob: CronJob | undefined;
+const { logger } = await createLogger();
 
 async function runOnce(): Promise<void> {
   if (isRunning) return;
@@ -20,17 +21,26 @@ async function runOnce(): Promise<void> {
 
 async function main(): Promise<void> {
   const interval = getInterval();
-  if (interval !== undefined) {
-    const schedule = `*/${interval} * * * *`;
-    watchJob = new CronJob(schedule, () => {
-      void runOnce().catch((error) => {
-        console.error('Aspen scheduled run failed', error);
-      });
-    });
-    watchJob.start();
+  const schedule = `*/${interval} * * * *`;
+  // If no interval is set, run once and exit.
+  if (!interval) {
+    logger.info('No interval set, running once');
+    await runOnce();
+    return;
   }
-
-  await runOnce();
+  // Otherwise, set up a cron job to run periodically.
+  CronJob.from({
+    cronTime: schedule,
+    onTick: async () => {
+      await runOnce().catch((error) => {
+        logger.error({ err: error as Error }, 'Aspen scheduled run failed');
+      });
+    },
+    runOnInit: true, // Run immediately on start
+    start: true, // Start the job right away
+    waitForCompletion: true, // Prevent overlapping runs
+  });
+  logger.info(`Aspen started, checking every ${interval} minute(s)`);
 }
 
 function getInterval(): number | undefined {
@@ -43,3 +53,7 @@ main().catch((error) => {
   console.error('Aspen failed to start', error);
   process.exitCode = 1;
 });
+
+// Behave well in containers
+process.on('SIGINT', () => process.exit(0));
+process.on('SIGTERM', () => process.exit(0));
