@@ -16,7 +16,7 @@ import type { EntitySelection } from './domain/metadata.js';
 import { normalizeName } from './utils/text.js';
 import type { AspenConfig } from './config/types.js';
 
-export async function run(runOnce = false): Promise<void> {
+export async function run(): Promise<void> {
   const config = loadConfig();
   const { logger, logFilePath } = await createLogger();
 
@@ -49,7 +49,8 @@ export async function run(runOnce = false): Promise<void> {
         logger,
         tagSet,
       });
-      if (!processed || runOnce) break;
+      // If no document was processed, the queue is empty - exit the loop.
+      if (!processed) break;
     } catch (error) {
       logger.error({ err: error }, 'Fatal error while processing document');
       throw error;
