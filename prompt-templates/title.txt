@@ -11,6 +11,7 @@ Rules:
 - Prefer concise titles (<= 120 characters) that would help users recognise the document at a glance.
 - Reuse important phrases from the document when they improve clarity.
 - If you cannot determine a confident title, set status to "unknown" and omit the value.
+- Leave the document's date and correspondent out of the title.
 
 Existing title (may be empty): {{CURRENT_TITLE}}
 
