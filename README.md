@@ -1,11 +1,11 @@
 # Aspen
 
-Aspen keeps your Paperless-ngx archive tidy by using AI to fill in missing metadata. Tag a document with `$ai-queue` and Aspen will propose a title, date, correspondent, and document type.
+Aspen keeps your Paperless-ngx archive tidy by using AI to fill in missing metadata. Tag a document with `000-ai-queue` and Aspen will propose a title, date, correspondent, and document type.
 
 ## Highlights
 - Automates metadata for Paperless-ngx using your preferred large language model.
 - Lets you choose which fields Aspen is allowed to change and whether it may create new correspondents or document types.
-- When the AI is uncertain, it tags the document with `$ai-review` for manual review.
+- When the AI is uncertain, it tags the document with `000-ai-review` for manual review.
 - Supports many AI providers via [token.js](https://github.com/verybigthings/token).
 - Editable prompt templates live in `prompt-templates/` so you can fine-tune how metadata is extracted.
 

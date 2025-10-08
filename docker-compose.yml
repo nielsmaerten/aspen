@@ -1,9 +1,6 @@
 services:
   aspen:
-    build:
-      context: .
-      dockerfile: Dockerfile
-    image: aspen:local
+    image: ghcr.io/nielsmaerten/aspen:latest
     env_file:
       - .env
     environment:

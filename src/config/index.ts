@@ -60,9 +60,9 @@ const providerNames = Object.keys(models) as string[];
 const envSchema = z.object({
   PAPERLESS_BASE_URL: z.string().trim().url('PAPERLESS_BASE_URL must be a valid URL'),
   PAPERLESS_API_TOKEN: z.string().trim().min(1, 'PAPERLESS_API_TOKEN must be set'),
-  ASPEN_TAG_QUEUE: tagSchema.optional().default('$ai-queue'),
-  ASPEN_TAG_PROCESSED: tagSchema.optional().default('$ai-processed'),
-  ASPEN_TAG_REVIEW: tagSchema.optional().default('$ai-review'),
+  ASPEN_TAG_QUEUE: tagSchema.optional().default('000-ai-queue'),
+  ASPEN_TAG_PROCESSED: tagSchema.optional().default('000-ai-processed'),
+  ASPEN_TAG_REVIEW: tagSchema.optional().default('000-ai-review'),
   ASPEN_SET_TITLE: booleanFromEnv(true),
   ASPEN_SET_CORRESPONDENT: booleanFromEnv(true),
   ASPEN_SET_DATE: booleanFromEnv(true),

@@ -11,9 +11,9 @@ const baseConfig: AspenConfig = {
     baseUrl: 'https://paperless.test',
     token: 'token',
     tags: {
-      queue: '$ai-queue',
-      processed: '$ai-processed',
-      review: '$ai-review',
+      queue: '000-ai-queue',
+      processed: '000-ai-processed',
+      review: '000-ai-review',
     },
   },
   metadata: {

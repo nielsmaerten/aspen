@@ -40,7 +40,7 @@ describe('loadConfig', () => {
 
     const config = loadConfig();
 
-    expect(config.paperless.tags.queue).toBe('$ai-queue');
+    expect(config.paperless.tags.queue).toBe('000-ai-queue');
     expect(config.metadata.targets.title).toBe(true);
     expect(config.ai.uploadOriginal).toBe(true);
     expect(config.ai.provider).toBe('openai');
@@ -48,7 +48,7 @@ describe('loadConfig', () => {
   });
 
   it('throws when tag names collide', () => {
-    resetEnv({ ASPEN_TAG_PROCESSED: '$ai-queue' });
+    resetEnv({ ASPEN_TAG_PROCESSED: '000-ai-queue' });
 
     expect(() => loadConfig()).toThrowError(/must be unique/i);
   });
