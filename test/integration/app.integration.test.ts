@@ -24,8 +24,7 @@ describe(
 
     it('runs a single processing loop', async () => {
       clearCachedConfig();
-      const runOnce = true;
-      await run(runOnce);
+      await run();
     });
   },
 );
