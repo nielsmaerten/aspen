@@ -138,6 +138,14 @@ export function loadConfig(): AspenConfig {
     throw new Error('ASPEN_TAG_QUEUE, ASPEN_TAG_PROCESSED, and ASPEN_TAG_REVIEW must be unique');
   }
 
+  let includeOriginal = parsed.ASPEN_UPLOAD_ORIGINAL;
+  if (includeOriginal) {
+    console.warn(
+      'Warning: ASPEN_UPLOAD_ORIGINAL is currently not supported and will be ignored.',
+    );
+    includeOriginal = false;
+  }
+
   const metadataTargets: Record<MetadataField, boolean> = {
     title: parsed.ASPEN_SET_TITLE,
     correspondent: parsed.ASPEN_SET_CORRESPONDENT,
@@ -179,7 +187,7 @@ export function loadConfig(): AspenConfig {
     ai: {
       provider,
       model,
-      uploadOriginal: parsed.ASPEN_UPLOAD_ORIGINAL && supportsImages,
+      uploadOriginal: includeOriginal && supportsImages,
       features: {
         supportsJson,
         supportsImages,
