@@ -10,6 +10,7 @@ Tag a document with `000-ai-queue`, and Aspen will propose a title, date, corres
 * Uses any compatible LLM (OpenAI, Anthropic, Ollama, etc.) via [token.js](https://github.com/verybigthings/token).
 * Configurable: choose which fields Aspen may modify and whether it can create new correspondents or document types.
 * Flags uncertain results with `000-ai-review` for manual checking.
+* Tags documents with `000-ai-error` when AI provider errors occur (e.g., context too large).
 * Customizable prompt templates in `prompt-templates/`.
 
 ## Requirements

@@ -14,6 +14,7 @@ const baseConfig: AspenConfig = {
       queue: '000-ai-queue',
       processed: '000-ai-processed',
       review: '000-ai-review',
+      error: '000-ai-error',
     },
   },
   metadata: {
