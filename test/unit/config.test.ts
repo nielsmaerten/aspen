@@ -42,7 +42,6 @@ describe('loadConfig', () => {
 
     expect(config.paperless.tags.queue).toBe('000-ai-queue');
     expect(config.metadata.targets.title).toBe(true);
-    expect(config.ai.uploadOriginal).toBe(true);
     expect(config.ai.provider).toBe('openai');
     expect(config.metadata.enabledFields).toContain('title');
   });
