@@ -140,9 +140,7 @@ export function loadConfig(): AspenConfig {
 
   let includeOriginal = parsed.ASPEN_UPLOAD_ORIGINAL;
   if (includeOriginal) {
-    console.warn(
-      'Warning: ASPEN_UPLOAD_ORIGINAL is currently not supported and will be ignored.',
-    );
+    console.warn('Warning: ASPEN_UPLOAD_ORIGINAL is currently not supported and will be ignored.');
     includeOriginal = false;
   }
 
