@@ -110,6 +110,14 @@ async function processNextDocument(context: ProcessingContext): Promise<boolean>
       'Metadata extraction failed; marking document as error',
     );
     await applyStatusTags(paperless, document.id, document.tags, tagSet, 'error');
+    const note = buildErrorNote(error);
+    if (note) {
+      try {
+        await paperless.addNote(document.id, note);
+      } catch (noteError) {
+        logger.warn({ documentId: document.id, err: noteError }, 'Failed to add error note');
+      }
+    }
     return true;
   }
   await materializeNewEntities(results, paperless, allowlists, logger);
@@ -367,6 +375,41 @@ async function applyStatusTags(
       remove_inbox_tags: false,
       tags: Array.from(tagsAfterStatus.queueRemoved),
     });
+  }
+}
+
+function buildErrorNote(error: unknown): string | null {
+  const message = extractErrorMessage(error);
+  if (!message) {
+    return null;
+  }
+
+  return `Aspen encountered an error while extracting metadata.\n\nError: ${message}`;
+}
+
+function extractErrorMessage(error: unknown): string | null {
+  if (!error) {
+    return null;
+  }
+
+  if (error instanceof Error) {
+    const trimmed = error.message?.trim();
+    if (trimmed) {
+      return trimmed;
+    }
+    const name = error.name?.trim();
+    return name ? `${name} (no message provided)` : null;
+  }
+
+  if (typeof error === 'string') {
+    const trimmed = error.trim();
+    return trimmed.length > 0 ? trimmed : null;
+  }
+
+  try {
+    return JSON.stringify(error);
+  } catch {
+    return String(error);
   }
 }
 

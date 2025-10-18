@@ -218,5 +218,11 @@ describe('run', () => {
       remove_inbox_tags: false,
       tags: [errorTagId],
     });
+
+    expect(service.addNote).toHaveBeenCalledTimes(1);
+    const [noteDocId, noteBody] = service.addNote.mock.calls[0];
+    expect(noteDocId).toBe(document.id);
+    expect(noteBody).toMatch(/Aspen encountered an error/i);
+    expect(noteBody).toMatch(/boom/);
   });
 });
