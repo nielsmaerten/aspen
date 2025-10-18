@@ -8,6 +8,7 @@ import { createMetadataStrategies } from './metadata/strategies/index.js';
 import { extractMetadata, requiresReview } from './metadata/extractor.js';
 import type { ExtractedMetadata } from './metadata/extractor.js';
 import type { AspenStrategy } from './metadata/strategies/index.js';
+import { buildReviewNote } from './metadata/review.js';
 import type { DocumentJob, PaperlessDocument } from './domain/document.js';
 import { buildAllowlist, findAllowlistMatch } from './domain/allowlists.js';
 import type { DocumentAllowlists, EntityAllowlistItem } from './domain/allowlists.js';
@@ -115,6 +116,17 @@ async function processNextDocument(context: ProcessingContext): Promise<boolean>
       remove_inbox_tags: false,
       tags: Array.from(tagsAfterStatus.queueRemoved),
     });
+  }
+
+  if (review) {
+    const note = buildReviewNote(results);
+    if (note) {
+      try {
+        await paperless.addNote(document.id, note);
+      } catch (error) {
+        logger.warn({ documentId: document.id, err: error }, 'Failed to add review note');
+      }
+    }
   }
 
   logger.info(

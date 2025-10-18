@@ -88,6 +88,10 @@ export class PaperlessService {
     });
   }
 
+  async addNote(id: number, note: string): Promise<void> {
+    await this.client.documents.addNote(id, { note });
+  }
+
   async downloadOriginal(id: number): Promise<Buffer> {
     const data = await this.client.documents.download(id, {
       original: true,
