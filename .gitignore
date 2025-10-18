@@ -4,3 +4,4 @@ logs/
 dist/
 /prompts/
 !/src/prompts/
+aspen.log

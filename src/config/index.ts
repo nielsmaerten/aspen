@@ -11,6 +11,7 @@ type EnvShape = {
   ASPEN_TAG_QUEUE?: string;
   ASPEN_TAG_PROCESSED?: string;
   ASPEN_TAG_REVIEW?: string;
+  ASPEN_TAG_ERROR?: string;
   ASPEN_SET_TITLE?: string;
   ASPEN_SET_CORRESPONDENT?: string;
   ASPEN_SET_DATE?: string;
@@ -63,6 +64,7 @@ const envSchema = z.object({
   ASPEN_TAG_QUEUE: tagSchema.optional().default('000-ai-queue'),
   ASPEN_TAG_PROCESSED: tagSchema.optional().default('000-ai-processed'),
   ASPEN_TAG_REVIEW: tagSchema.optional().default('000-ai-review'),
+  ASPEN_TAG_ERROR: tagSchema.optional().default('000-ai-error'),
   ASPEN_SET_TITLE: booleanFromEnv(true),
   ASPEN_SET_CORRESPONDENT: booleanFromEnv(true),
   ASPEN_SET_DATE: booleanFromEnv(true),
@@ -133,9 +135,16 @@ export function loadConfig(): AspenConfig {
 
   const parsed = envSchema.parse(buildEnvSource());
 
-  const tagValues = [parsed.ASPEN_TAG_QUEUE, parsed.ASPEN_TAG_PROCESSED, parsed.ASPEN_TAG_REVIEW];
+  const tagValues = [
+    parsed.ASPEN_TAG_QUEUE,
+    parsed.ASPEN_TAG_PROCESSED,
+    parsed.ASPEN_TAG_REVIEW,
+    parsed.ASPEN_TAG_ERROR,
+  ];
   if (new Set(tagValues).size !== tagValues.length) {
-    throw new Error('ASPEN_TAG_QUEUE, ASPEN_TAG_PROCESSED, and ASPEN_TAG_REVIEW must be unique');
+    throw new Error(
+      'ASPEN_TAG_QUEUE, ASPEN_TAG_PROCESSED, ASPEN_TAG_REVIEW, and ASPEN_TAG_ERROR must be unique',
+    );
   }
 
   let includeOriginal = parsed.ASPEN_UPLOAD_ORIGINAL;
@@ -174,6 +183,7 @@ export function loadConfig(): AspenConfig {
         queue: parsed.ASPEN_TAG_QUEUE,
         processed: parsed.ASPEN_TAG_PROCESSED,
         review: parsed.ASPEN_TAG_REVIEW,
+        error: parsed.ASPEN_TAG_ERROR,
       },
     },
     metadata: {

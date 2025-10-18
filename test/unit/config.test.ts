@@ -36,11 +36,13 @@ describe('loadConfig', () => {
       ASPEN_SET_DATE: 'on',
       ASPEN_SET_DOCTYPE: 'true',
       ASPEN_ALLOW_NEW_DOCTYPES: 'false',
+      ASPEN_AI_PROVIDER: 'openai',
     });
 
     const config = loadConfig();
 
     expect(config.paperless.tags.queue).toBe('000-ai-queue');
+    expect(config.paperless.tags.error).toBe('000-ai-error');
     expect(config.metadata.targets.title).toBe(true);
     expect(config.ai.provider).toBe('openai');
     expect(config.metadata.enabledFields).toContain('title');

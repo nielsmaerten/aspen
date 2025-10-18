@@ -44,8 +44,6 @@ describe('buildReviewNote', () => {
     };
 
     const note = buildReviewNote(results);
-    expect(note).toBe(
-      'Aspen requested manual review for:\n- Document type: Marked as invalid',
-    );
+    expect(note).toBe('Aspen requested manual review for:\n- Document type: Marked as invalid');
   });
 });

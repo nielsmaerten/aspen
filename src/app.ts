@@ -58,10 +58,13 @@ interface ProcessingContext {
   tagSet: TagSet;
 }
 
+type DocumentStatus = 'processed' | 'review' | 'error';
+
 interface TagSet {
   queue: number;
   processed: number;
   review: number;
+  error: number;
 }
 
 async function processNextDocument(context: ProcessingContext): Promise<boolean> {
@@ -93,32 +96,31 @@ async function processNextDocument(context: ProcessingContext): Promise<boolean>
     logger,
   };
 
-  const results = await extractMetadata(
-    job,
-    extractionContext,
-    strategies,
-    config.metadata.enabledFields,
-  );
+  let results: ExtractedMetadata;
+  try {
+    results = await extractMetadata(
+      job,
+      extractionContext,
+      strategies,
+      config.metadata.enabledFields,
+    );
+  } catch (error) {
+    logger.error(
+      { documentId: document.id, err: error },
+      'Metadata extraction failed; marking document as error',
+    );
+    await applyStatusTags(paperless, document.id, document.tags, tagSet, 'error');
+    return true;
+  }
   await materializeNewEntities(results, paperless, allowlists, logger);
 
   const review = requiresReview(results);
+  const status: DocumentStatus = review ? 'review' : 'processed';
 
   const updatePayload = buildUpdatePayload(results);
-  const tagsAfterStatus = planTagUpdate(document.tags, tagSet, review);
+  await applyStatusTags(paperless, document.id, document.tags, tagSet, status, updatePayload);
 
-  await paperless.updateDocument(document.id, {
-    ...updatePayload,
-    tags: Array.from(tagsAfterStatus.withQueue),
-  });
-
-  if (tagsAfterStatus.queueRemoved.length !== tagsAfterStatus.withQueue.length) {
-    await paperless.updateDocument(document.id, {
-      remove_inbox_tags: false,
-      tags: Array.from(tagsAfterStatus.queueRemoved),
-    });
-  }
-
-  if (review) {
+  if (status === 'review') {
     const note = buildReviewNote(results);
     if (note) {
       try {
@@ -132,7 +134,7 @@ async function processNextDocument(context: ProcessingContext): Promise<boolean>
   logger.info(
     {
       documentId: document.id,
-      status: review ? 'review' : 'processed',
+      status,
       results: summarizeResults(results),
     },
     'Document processed',
@@ -149,11 +151,13 @@ async function ensureTags(
   const queue = await ensureTag(paperless, config.paperless.tags.queue, logger);
   const processed = await ensureTag(paperless, config.paperless.tags.processed, logger);
   const review = await ensureTag(paperless, config.paperless.tags.review, logger);
+  const error = await ensureTag(paperless, config.paperless.tags.error, logger);
 
   return {
     queue: queue.id,
     processed: processed.id,
     review: review.id,
+    error: error.id,
   };
 }
 
@@ -318,16 +322,21 @@ function buildUpdatePayload(results: ExtractedMetadata): DocumentUpdatePayload {
 function planTagUpdate(
   currentTags: number[],
   tagSet: TagSet,
-  review: boolean,
+  status: DocumentStatus,
 ): {
   withQueue: number[];
   queueRemoved: number[];
 } {
-  const desiredTag = review ? tagSet.review : tagSet.processed;
+  const desiredTag = tagSet[status];
   const tagsWithNew = new Set(currentTags);
   tagsWithNew.add(desiredTag);
-  const tagToRemove = review ? tagSet.processed : tagSet.review;
-  tagsWithNew.delete(tagToRemove);
+
+  const statusTags = [tagSet.processed, tagSet.review, tagSet.error];
+  for (const tag of statusTags) {
+    if (tag !== desiredTag) {
+      tagsWithNew.delete(tag);
+    }
+  }
 
   const tagsWithoutQueue = new Set(tagsWithNew);
   tagsWithoutQueue.delete(tagSet.queue);
@@ -336,6 +345,29 @@ function planTagUpdate(
     withQueue: Array.from(tagsWithNew),
     queueRemoved: Array.from(tagsWithoutQueue),
   };
+}
+
+async function applyStatusTags(
+  paperless: PaperlessService,
+  documentId: number,
+  currentTags: number[],
+  tagSet: TagSet,
+  status: DocumentStatus,
+  updatePayload: DocumentUpdatePayload = {},
+): Promise<void> {
+  const tagsAfterStatus = planTagUpdate(currentTags, tagSet, status);
+
+  await paperless.updateDocument(documentId, {
+    ...updatePayload,
+    tags: Array.from(tagsAfterStatus.withQueue),
+  });
+
+  if (tagsAfterStatus.queueRemoved.length !== tagsAfterStatus.withQueue.length) {
+    await paperless.updateDocument(documentId, {
+      remove_inbox_tags: false,
+      tags: Array.from(tagsAfterStatus.queueRemoved),
+    });
+  }
 }
 
 function summarizeResults(results: ExtractedMetadata) {
