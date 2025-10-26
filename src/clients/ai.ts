@@ -33,6 +33,24 @@ export interface AiCompletionResult {
   response: CompletionResponse;
 }
 
+type CompletionRequestBase = Parameters<
+  InstanceType<typeof TokenJS>['chat']['completions']['create']
+>[0];
+
+type CompletionRequestWithExtras = CompletionRequestBase & {
+  transform?: 'middle-out';
+  plugins?: OpenRouterPlugin[];
+};
+
+type OpenRouterPlugin = {
+  id: 'file-parser';
+  pdf: Record<string, never>;
+};
+
+type FileContentPart = {
+  type: 'file';
+};
+
 export class AiService {
   private readonly client: TokenJS;
 
@@ -45,14 +63,32 @@ export class AiService {
     this.client = new TokenJS(opts);
   }
   async complete(request: AiCompletionRequest): Promise<AiCompletionResult> {
-    const response = await this.client.chat.completions.create({
+    const completionRequest: CompletionRequestWithExtras = {
       provider: this.config.provider,
       model: this.config.model,
       messages: request.messages,
       response_format: request.responseFormat,
       temperature: request.temperature,
       max_tokens: request.maxTokens,
-    });
+    };
+
+    if (this.config.provider === 'openrouter') {
+      // Use OpenRouter's built-in context compression to keep oversized prompts usable.
+      completionRequest.transform = 'middle-out';
+
+      if (messagesIncludeFileAttachment(request.messages)) {
+        completionRequest.plugins = [
+          {
+            id: 'file-parser',
+            pdf: {},
+          },
+        ];
+      }
+    }
+
+    const response = (await this.client.chat.completions.create(
+      completionRequest,
+    )) as CompletionResponse; // Non-streaming requests always resolve to CompletionResponse
 
     const [choice] = response.choices;
     const text = normalizeMessageText(choice?.message?.content);
@@ -94,4 +130,26 @@ function normalizeMessageText(
     })
     .join('')
     .trim();
+}
+
+function messagesIncludeFileAttachment(messages: ChatCompletionMessageParam[]): boolean {
+  return messages.some((message) => {
+    if (!Array.isArray(message.content)) {
+      return false;
+    }
+
+    return message.content.some((part) => isFileContentPart(part));
+  });
+}
+
+function isFileContentPart(part: unknown): part is FileContentPart {
+  if (!part || typeof part !== 'object') {
+    return false;
+  }
+
+  if (!('type' in part)) {
+    return false;
+  }
+
+  return (part as { type?: unknown }).type === 'file';
 }

@@ -5,7 +5,8 @@ import type { MetadataExtractionContext } from './context.js';
 import { renderTemplate } from './templates.js';
 import { truncate } from '../utils/text.js';
 
-const MAX_BASE64_ATTACH_BYTES = 2 * 1024 * 1024; // 2 MiB
+const MAX_BASE64_ATTACH_BYTES = 10 * 1024 * 1024; // MiB
+const PDF_MIME_TYPE = 'application/pdf';
 
 export function buildUserMessage(
   template: string,
@@ -46,18 +47,52 @@ export function buildUserMessage(
   }
 
   const base64 = originalFile.toString('base64');
-  const appended = `${rendered}\n\nOriginal document (base64-encoded PDF):\n${base64}`;
+  if (context.config.ai.provider === 'openrouter') {
+    const content = [
+      {
+        type: 'text' as const,
+        text: rendered,
+      },
+      {
+        type: 'file' as const,
+        file: {
+          filename: buildFilename(job),
+          file_data: buildPdfDataUrl(base64),
+        },
+      },
+    ];
 
-  context.logger.debug(
+    context.logger.debug(
+      {
+        documentId: job.document.id,
+        preview: truncate(base64, 32),
+      },
+      'Attached PDF document to prompt via OpenRouter file part',
+    );
+
+    return {
+      role: 'user',
+      content,
+    };
+  }
+
+  context.logger.warn(
     {
       documentId: job.document.id,
-      preview: truncate(base64, 32),
     },
-    'Attached base64-encoded document to prompt',
+    'Currently, file attachments are only supported for OpenRouter provider; falling back to text only',
   );
 
   return {
     role: 'user',
-    content: appended,
+    content: rendered,
   };
+}
+
+function buildPdfDataUrl(base64: string): string {
+  return `data:${PDF_MIME_TYPE};base64,${base64}`;
+}
+
+function buildFilename(job: DocumentJob): string {
+  return `document-${job.document.id}.pdf`;
 }
