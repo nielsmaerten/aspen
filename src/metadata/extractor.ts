@@ -26,7 +26,7 @@ export async function extractMetadata(
       continue;
     }
 
-    context.logger.debug(
+    context.logger.warn(
       { field: strategy.field, documentId: job.document.id },
       'Retrying metadata extraction with PDF attachment',
     );
@@ -42,10 +42,7 @@ export function requiresReview(results: ExtractedMetadata): boolean {
   return Object.values(results).some((result) => result && result.type !== 'ok');
 }
 
-function shouldAttemptPdfFallback(
-  job: DocumentJob,
-  context: MetadataExtractionContext,
-): boolean {
+function shouldAttemptPdfFallback(job: DocumentJob, context: MetadataExtractionContext): boolean {
   if (!context.config.ai.uploadOriginal) {
     return false;
   }

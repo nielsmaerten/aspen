@@ -74,9 +74,7 @@ const normalizeStatus = (value: unknown): Status => {
   return 'unknown';
 };
 
-const statusSchema = z
-  .any()
-  .transform<Status>((value) => normalizeStatus(value));
+const statusSchema = z.any().transform<Status>((value) => normalizeStatus(value));
 
 const maybeText = (max = 512) =>
   z.any().transform<string | undefined>((value) => {

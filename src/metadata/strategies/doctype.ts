@@ -10,7 +10,8 @@ import { buildUserMessage } from '../message-builder.js';
 import { executeAiCall } from './shared.js';
 
 export class DoctypeStrategy
-  implements MetadataStrategy<'doctype', EntitySelection, MetadataExtractionContext> {
+  implements MetadataStrategy<'doctype', EntitySelection, MetadataExtractionContext>
+{
   readonly field = 'doctype' as const;
 
   async extract(
@@ -23,9 +24,7 @@ export class DoctypeStrategy
     const allowNew = context.config.metadata.allowNewDocumentTypes;
 
     const allowlistText = allowlist.length
-      ? allowlist
-        .map((item, index) => `${index + 1}. ${item.name}`)
-        .join('\n')
+      ? allowlist.map((item, index) => `${index + 1}. ${item.name}`).join('\n')
       : 'None';
 
     const messages: ChatCompletionMessageParam[] = [

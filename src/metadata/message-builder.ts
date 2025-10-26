@@ -17,8 +17,7 @@ export function buildUserMessage(
   options?: MetadataExtractionOptions,
 ): ChatCompletionMessageParam {
   const rendered = renderTemplate(template, variables);
-  const wantsAttachment =
-    Boolean(options?.includeOriginalFile) && context.config.ai.uploadOriginal;
+  const wantsAttachment = Boolean(options?.includeOriginalFile) && context.config.ai.uploadOriginal;
   const originalFile = job.originalFile;
 
   if (!wantsAttachment || !originalFile) {
@@ -59,13 +58,7 @@ export function buildUserMessage(
       },
     ];
 
-    context.logger.debug(
-      {
-        documentId: job.document.id,
-        preview: truncate(base64, 32),
-      },
-      'Attached PDF document to prompt via OpenRouter file part',
-    );
+    context.logger.debug('Attached PDF document to prompt via OpenRouter file part');
 
     return {
       role: 'user',

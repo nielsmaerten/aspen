@@ -223,6 +223,8 @@ async function buildJob(
     }
   }
 
+  const preview = `${textContent.slice(0, 30).replace(/\s+/g, ' ')}...`;
+  logger.debug({ documentId: document.id, preview }, 'Built document job for metadata extraction');
   return {
     document,
     textContent,

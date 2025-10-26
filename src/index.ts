@@ -37,6 +37,9 @@ async function main(): Promise<void> {
       await runOnce().catch((error) => {
         logger.error({ err: error as Error }, 'Aspen scheduled run failed');
       });
+      if (interval) {
+        logger.debug(`Run completed. Waiting for next tick.`);
+      }
     },
     runOnInit: true, // Run immediately on start
     start: true, // Start the job right away
