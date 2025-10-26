@@ -1,4 +1,5 @@
 import { z } from 'zod';
+import { jsonc } from 'jsonc';
 
 import type { MetadataField } from '../../domain/metadata.js';
 import type { MetadataExtractionContext } from '../context.js';
@@ -63,7 +64,7 @@ export async function executeAiCall<TSchema extends z.ZodTypeAny>(
 
   let parsed: unknown;
   try {
-    parsed = JSON.parse(raw);
+    parsed = jsonc.parse(raw);
   } catch (error) {
     context.logger.warn(
       { field, preview: truncate(result.text, 500), error: (error as Error).message },
@@ -90,7 +91,7 @@ function extractJson(content: string): string | null {
     return null;
   }
 
-  const fenced = trimmed.match(/```(?:json)?\n([\s\S]+?)```/i);
+  const fenced = trimmed.match(/```(?:\w+)?\n([\s\S]+?)```/i);
   if (fenced) {
     return fenced[1].trim();
   }
