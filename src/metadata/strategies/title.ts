@@ -3,7 +3,7 @@ import type { ChatCompletionMessageParam } from 'token.js';
 import type { MetadataStrategy } from '../../domain/metadata.js';
 import type { DocumentJob } from '../../domain/document.js';
 import type { MetadataExtractionContext } from '../context.js';
-import { TitleResponseSchema } from '../schemas.js';
+import { BasicTitleResponseSchema, TitleResponseSchema } from '../schemas.js';
 import { buildUserMessage } from '../message-builder.js';
 import { executeAiCall } from './shared.js';
 
@@ -33,6 +33,7 @@ export class TitleStrategy implements MetadataStrategy<'title', string, Metadata
     const response = await executeAiCall({
       field: this.field,
       schema: TitleResponseSchema,
+      wireSchema: BasicTitleResponseSchema,
       context,
       messages,
       responseName: 'title_response',

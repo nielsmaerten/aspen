@@ -9,6 +9,7 @@ import { truncate } from '../../utils/text.js';
 interface ExecuteAiOptions<TSchema extends z.ZodTypeAny> {
   field: MetadataField;
   schema: TSchema;
+  wireSchema?: z.ZodTypeAny;
   context: MetadataExtractionContext;
   messages: Parameters<MetadataExtractionContext['ai']['complete']>[0]['messages'];
   responseName: string;
@@ -29,11 +30,12 @@ export type ExecuteAiResult<T> = ExecuteAiSuccess<T> | ExecuteAiFailure;
 export async function executeAiCall<TSchema extends z.ZodTypeAny>(
   options: ExecuteAiOptions<TSchema>,
 ): Promise<ExecuteAiResult<z.infer<TSchema>>> {
-  const { field, schema, context, messages, responseName } = options;
+  const { field, schema, wireSchema, context, messages, responseName } = options;
 
   let responseFormat: AiResponseFormat | undefined;
   if (context.config.ai.features.supportsJson) {
-    const jsonSchema = z.toJSONSchema(schema, {
+    const schemaForJson = wireSchema ?? schema;
+    const jsonSchema = z.toJSONSchema(schemaForJson, {
       target: 'draft-7',
       io: 'output',
     }) as unknown as Record<string, unknown>;
@@ -75,11 +77,12 @@ export async function executeAiCall<TSchema extends z.ZodTypeAny>(
 
   const validation = schema.safeParse(parsed);
   if (!validation.success) {
+    const humanizedError = z.prettifyError(validation.error);
     context.logger.warn(
       { field, issues: validation.error.issues },
       'Model JSON response failed validation',
     );
-    return { success: false, error: 'Model response failed validation' };
+    return { success: false, error: humanizedError };
   }
 
   return { success: true, data: validation.data };

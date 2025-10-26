@@ -8,7 +8,7 @@
   "scripts": {
     "build": "tsc --project tsconfig.build.json",
     "clean": "rimraf dist && rimraf bin && rimraf tmp && rimraf logs",
-    "dev": "tsx watch src/index.ts",
+    "dev": "rimraf prompts && tsx watch src/index.ts",
     "format": "prettier --write \"{src,test}/**/*.{ts,js,json}\"",
     "lint": "prettier --check \"{src,test}/**/*.{ts,js,json}\"",
     "start": "pnpm run build && node dist/index.js",

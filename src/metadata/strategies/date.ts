@@ -3,7 +3,7 @@ import type { ChatCompletionMessageParam } from 'token.js';
 import type { MetadataStrategy } from '../../domain/metadata.js';
 import type { DocumentJob } from '../../domain/document.js';
 import type { MetadataExtractionContext } from '../context.js';
-import { DateResponseSchema } from '../schemas.js';
+import { BasicDateResponseSchema, DateResponseSchema } from '../schemas.js';
 import { buildUserMessage } from '../message-builder.js';
 import { executeAiCall } from './shared.js';
 
@@ -33,6 +33,7 @@ export class DateStrategy implements MetadataStrategy<'date', string, MetadataEx
     const response = await executeAiCall({
       field: this.field,
       schema: DateResponseSchema,
+      wireSchema: BasicDateResponseSchema,
       context,
       messages,
       responseName: 'date_response',

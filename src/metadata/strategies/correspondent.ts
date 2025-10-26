@@ -5,7 +5,7 @@ import type { EntitySelection } from '../../domain/metadata.js';
 import type { DocumentJob } from '../../domain/document.js';
 import { findAllowlistMatch } from '../../domain/allowlists.js';
 import type { MetadataExtractionContext } from '../context.js';
-import { CorrespondentResponseSchema } from '../schemas.js';
+import { BasicCorrespondentResponseSchema, CorrespondentResponseSchema } from '../schemas.js';
 import { buildUserMessage } from '../message-builder.js';
 import { executeAiCall } from './shared.js';
 
@@ -46,6 +46,7 @@ export class CorrespondentStrategy
     const response = await executeAiCall({
       field: this.field,
       schema: CorrespondentResponseSchema,
+      wireSchema: BasicCorrespondentResponseSchema,
       context,
       messages,
       responseName: 'correspondent_response',
@@ -78,6 +79,14 @@ export class CorrespondentStrategy
     }
 
     const candidate = response.data.value;
+    if (!candidate.name) {
+      return {
+        field: this.field,
+        type: 'invalid' as const,
+        message: 'Model did not provide a correspondent name',
+      };
+    }
+
     const existing = findAllowlistMatch(allowlist, candidate.name);
 
     if (existing) {
