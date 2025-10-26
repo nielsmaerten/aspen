@@ -51,7 +51,15 @@ export type MetadataResult<Field extends MetadataField, Value> =
   | MetadataUnknown<Field>
   | MetadataInvalid<Field>;
 
+export interface MetadataExtractionOptions {
+  includeOriginalFile?: boolean;
+}
+
 export interface MetadataStrategy<Field extends MetadataField, Value, Context = unknown> {
   readonly field: Field;
-  extract(job: DocumentJob, context: Context): Promise<MetadataResult<Field, Value>>;
+  extract(
+    job: DocumentJob,
+    context: Context,
+    options?: MetadataExtractionOptions,
+  ): Promise<MetadataResult<Field, Value>>;
 }

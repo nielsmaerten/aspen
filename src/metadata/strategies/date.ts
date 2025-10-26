@@ -1,6 +1,6 @@
 import type { ChatCompletionMessageParam } from 'token.js';
 
-import type { MetadataStrategy } from '../../domain/metadata.js';
+import type { MetadataExtractionOptions, MetadataStrategy } from '../../domain/metadata.js';
 import type { DocumentJob } from '../../domain/document.js';
 import type { MetadataExtractionContext } from '../context.js';
 import { BasicDateResponseSchema, DateResponseSchema } from '../schemas.js';
@@ -10,7 +10,11 @@ import { executeAiCall } from './shared.js';
 export class DateStrategy implements MetadataStrategy<'date', string, MetadataExtractionContext> {
   readonly field = 'date' as const;
 
-  async extract(job: DocumentJob, context: MetadataExtractionContext) {
+  async extract(
+    job: DocumentJob,
+    context: MetadataExtractionContext,
+    options?: MetadataExtractionOptions,
+  ) {
     const prompt = await context.prompts.get('date');
 
     const messages: ChatCompletionMessageParam[] = [
@@ -27,6 +31,7 @@ export class DateStrategy implements MetadataStrategy<'date', string, MetadataEx
         },
         job,
         context,
+        options,
       ),
     ];
 

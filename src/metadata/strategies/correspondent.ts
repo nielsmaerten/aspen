@@ -1,6 +1,6 @@
 import type { ChatCompletionMessageParam } from 'token.js';
 
-import type { MetadataStrategy } from '../../domain/metadata.js';
+import type { MetadataExtractionOptions, MetadataStrategy } from '../../domain/metadata.js';
 import type { EntitySelection } from '../../domain/metadata.js';
 import type { DocumentJob } from '../../domain/document.js';
 import { findAllowlistMatch } from '../../domain/allowlists.js';
@@ -13,7 +13,11 @@ export class CorrespondentStrategy
   implements MetadataStrategy<'correspondent', EntitySelection, MetadataExtractionContext> {
   readonly field = 'correspondent' as const;
 
-  async extract(job: DocumentJob, context: MetadataExtractionContext) {
+  async extract(
+    job: DocumentJob,
+    context: MetadataExtractionContext,
+    options?: MetadataExtractionOptions,
+  ) {
     const prompt = await context.prompts.get('correspondent');
     const allowlist = context.allowlists.correspondents;
     const allowNew = context.config.metadata.allowNewCorrespondents;
@@ -40,6 +44,7 @@ export class CorrespondentStrategy
         },
         job,
         context,
+        options,
       ),
     ];
 

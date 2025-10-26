@@ -1,6 +1,7 @@
 import type { ChatCompletionMessageParam } from 'token.js';
 
 import type { DocumentJob } from '../domain/document.js';
+import type { MetadataExtractionOptions } from '../domain/metadata.js';
 import type { MetadataExtractionContext } from './context.js';
 import { renderTemplate } from './templates.js';
 import { truncate } from '../utils/text.js';
@@ -13,18 +14,14 @@ export function buildUserMessage(
   variables: Record<string, string>,
   job: DocumentJob,
   context: MetadataExtractionContext,
+  options?: MetadataExtractionOptions,
 ): ChatCompletionMessageParam {
   const rendered = renderTemplate(template, variables);
+  const wantsAttachment =
+    Boolean(options?.includeOriginalFile) && context.config.ai.uploadOriginal;
+  const originalFile = job.originalFile;
 
-  if (!context.config.ai.uploadOriginal || !job.originalFile) {
-    return {
-      role: 'user',
-      content: rendered,
-    };
-  }
-
-  const { originalFile } = job;
-  if (!originalFile) {
+  if (!wantsAttachment || !originalFile) {
     return {
       role: 'user',
       content: rendered,

@@ -1,6 +1,6 @@
 import type { ChatCompletionMessageParam } from 'token.js';
 
-import type { MetadataStrategy } from '../../domain/metadata.js';
+import type { MetadataExtractionOptions, MetadataStrategy } from '../../domain/metadata.js';
 import type { EntitySelection } from '../../domain/metadata.js';
 import type { DocumentJob } from '../../domain/document.js';
 import { findAllowlistMatch } from '../../domain/allowlists.js';
@@ -13,7 +13,11 @@ export class DoctypeStrategy
   implements MetadataStrategy<'doctype', EntitySelection, MetadataExtractionContext> {
   readonly field = 'doctype' as const;
 
-  async extract(job: DocumentJob, context: MetadataExtractionContext) {
+  async extract(
+    job: DocumentJob,
+    context: MetadataExtractionContext,
+    options?: MetadataExtractionOptions,
+  ) {
     const prompt = await context.prompts.get('doctype');
     const allowlist = context.allowlists.documentTypes;
     const allowNew = context.config.metadata.allowNewDocumentTypes;
@@ -40,6 +44,7 @@ export class DoctypeStrategy
         },
         job,
         context,
+        options,
       ),
     ];
 

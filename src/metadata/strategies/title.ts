@@ -1,6 +1,6 @@
 import type { ChatCompletionMessageParam } from 'token.js';
 
-import type { MetadataStrategy } from '../../domain/metadata.js';
+import type { MetadataExtractionOptions, MetadataStrategy } from '../../domain/metadata.js';
 import type { DocumentJob } from '../../domain/document.js';
 import type { MetadataExtractionContext } from '../context.js';
 import { BasicTitleResponseSchema, TitleResponseSchema } from '../schemas.js';
@@ -10,7 +10,11 @@ import { executeAiCall } from './shared.js';
 export class TitleStrategy implements MetadataStrategy<'title', string, MetadataExtractionContext> {
   readonly field = 'title' as const;
 
-  async extract(job: DocumentJob, context: MetadataExtractionContext) {
+  async extract(
+    job: DocumentJob,
+    context: MetadataExtractionContext,
+    options?: MetadataExtractionOptions,
+  ) {
     const prompt = await context.prompts.get('title');
 
     const messages: ChatCompletionMessageParam[] = [
@@ -27,6 +31,7 @@ export class TitleStrategy implements MetadataStrategy<'title', string, Metadata
         },
         job,
         context,
+        options,
       ),
     ];
 
